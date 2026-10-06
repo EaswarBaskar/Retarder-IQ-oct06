@@ -425,6 +425,9 @@ function hide(el) {
     } catch (error) {
       console.error('[Sync] Submission failed:', error);
       await saveToSyncQueue(data, idempotencyKey);
+      window.setTimeout(() => {
+        window.flushSyncQueue().catch(retryError => console.error('[Sync] Delayed retry failed:', retryError));
+      }, 5000);
       return false;
     }
   }
@@ -467,6 +470,7 @@ function hide(el) {
   }
 
   window.addEventListener('online', window.flushSyncQueue);
+  window.flushSyncQueue().catch(error => console.error('[Sync] Initial queue flush failed:', error));
   window.sendDataToGoogleSheet = submitDiagnostic;
   window.sendDataToPowerAutomate = () => Promise.resolve(false);
 
